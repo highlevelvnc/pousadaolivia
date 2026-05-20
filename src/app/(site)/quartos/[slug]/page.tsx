@@ -2,15 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Users, BedDouble, CheckCircle2 } from "lucide-react";
-import { getRoomBySlug, getRooms } from "@/lib/data";
+import { getRoomBySlug } from "@/lib/data";
 import { formatBRL } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/constants";
 import { buildWhatsAppBookingMessage } from "@/lib/booking/whatsapp";
 
-export async function generateStaticParams() {
-  const rooms = await getRooms();
-  return rooms.map((r) => ({ slug: r.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
