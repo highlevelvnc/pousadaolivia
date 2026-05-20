@@ -11,11 +11,11 @@ export default function RoomsGrid({ rooms }: { rooms: Room[] }) {
           <p className="label-eyebrow">Acomodacoes</p>
           <h2 className="section-title mt-3">Nossos quartos</h2>
           <p className="mt-4 text-graphite/70">
-            Escolha o espaco ideal para o seu descanso. Todos os quartos sao limpos, climatizados e preparados para receber a sua familia.
+            Quartos confortaveis e bem cuidados a partir de R$ 80 a noite. Valores especiais em alta temporada.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room) => (
             <article key={room.id} className="card-coastal group flex flex-col" data-reveal>
               <Link href={`/quartos/${room.slug}`} className="block aspect-[4/3] overflow-hidden">

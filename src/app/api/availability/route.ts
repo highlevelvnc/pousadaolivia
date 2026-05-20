@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getRooms, getBookings, getBlockedDates } from "@/lib/data";
+import { getRooms, getBookings, getBlockedDates, getSeasonalPrices } from "@/lib/data";
 import { isRoomAvailable } from "@/lib/booking/availability";
 import { calcTotal } from "@/lib/booking/pricing";
 
@@ -22,11 +22,16 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "check-out deve ser depois do check-in" }, { status: 400 });
   }
 
-  const [rooms, bookings, blocked] = await Promise.all([getRooms(), getBookings(), getBlockedDates()]);
+  const [rooms, bookings, blocked, seasonal] = await Promise.all([
+    getRooms(),
+    getBookings(),
+    getBlockedDates(),
+    getSeasonalPrices(),
+  ]);
 
   const available = rooms
     .filter((room) => isRoomAvailable({ room, checkIn, checkOut, bookings, blocked, adults, children }))
-    .map((room) => ({ room, ...calcTotal({ room, checkIn, checkOut }) }));
+    .map((room) => ({ room, ...calcTotal({ room, checkIn, checkOut, seasonal }) }));
 
   return NextResponse.json({ checkIn, checkOut, adults, children, results: available });
 }

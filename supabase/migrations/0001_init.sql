@@ -211,27 +211,48 @@ create policy "admin all blocked"         on public.blocked_dates   for all usin
 create policy "admin all seasons"         on public.seasonal_prices for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "admin all settings"        on public.settings        for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
--- ---------- Seed (dados de demonstracao) ----------
+-- ---------- Seed (19 quartos · 6 activos · base R$ 80) ----------
 
-insert into public.rooms (slug, name, description, capacity_adults, capacity_children, base_price, image_url, amenities, beds) values
-  ('casal', 'Suite Casal',
-   'Suite acolhedora para dois, com cama queen, ar-condicionado, varanda e enxoval premium.',
-   2, 0, 380,
-   'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=80',
-   '["Ar-condicionado","Smart TV","Wi-Fi","Frigobar"]'::jsonb, '1 cama queen'),
-  ('familia', 'Quarto Familia',
-   'Espacoso e luminoso para familias. Cama de casal + duas de solteiro.',
-   2, 2, 550,
-   'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1400&q=80',
-   '["Ar-condicionado","Smart TV","Wi-Fi","Frigobar"]'::jsonb, '1 casal + 2 solteiros'),
-  ('triplo', 'Suite Tripla',
-   'Tres camas confortaveis, ambiente arejado e decoracao em tons claros.',
-   3, 1, 450,
-   'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1400&q=80',
-   '["Ar-condicionado","Wi-Fi","Frigobar","Cofre"]'::jsonb, '3 camas de solteiro'),
-  ('economico', 'Quarto Economico',
-   'Opcao enxuta e aconchegante, a poucos passos da praia e da lagoa.',
-   2, 0, 290,
-   'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1400&q=80',
-   '["Ventilador","Wi-Fi","TV"]'::jsonb, '1 cama de casal')
+-- Imagens default para variar visualmente (substituir por fotos reais depois).
+with imgs as (
+  select array[
+    'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=1400&q=80'
+  ] as urls
+),
+nums as (select generate_series(1, 19) as n)
+insert into public.rooms (slug, name, description, capacity_adults, capacity_children, base_price, image_url, amenities, beds, is_active)
+select
+  'room-' || lpad(n::text, 2, '0'),
+  'Quarto ' || lpad(n::text, 2, '0'),
+  'Quarto confortavel, limpo e bem cuidado. Cama de casal com possibilidade de cama auxiliar, ventilador, frigobar, banheiro privativo e Wi-Fi.',
+  2,
+  1,
+  80,
+  (select urls[1 + ((n - 1) % array_length(urls, 1))] from imgs),
+  '["Wi-Fi","Ventilador","Frigobar","TV","Banheiro privativo"]'::jsonb,
+  '1 cama de casal (+ auxiliar sob consulta)',
+  n <= 6
+from nums
 on conflict (slug) do nothing;
+
+-- Precos sazonais (alta temporada · R$ 150) aplicados a todos os quartos.
+with periods(start_date, end_date, label) as (
+  values
+    (date '2026-12-15', date '2027-03-02', 'Verao 2026/2027 + Carnaval'),
+    (date '2026-06-04', date '2026-06-08', 'Corpus Christi'),
+    (date '2026-09-05', date '2026-09-08', 'Independencia'),
+    (date '2026-10-10', date '2026-10-13', 'N. S. Aparecida'),
+    (date '2026-10-31', date '2026-11-03', 'Finados'),
+    (date '2026-11-13', date '2026-11-16', 'Proclamacao da Republica'),
+    (date '2026-12-25', date '2026-12-28', 'Natal')
+)
+insert into public.seasonal_prices (room_id, start_date, end_date, price_per_night, label)
+select r.id, p.start_date, p.end_date, 150, p.label
+from public.rooms r
+cross join periods p
+on conflict do nothing;

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { SUPABASE_ENABLED } from "@/lib/supabase/env";
 import { MOCK_BOOKINGS } from "@/lib/booking/mock-data";
-import { getRooms, getBookings, getBlockedDates } from "@/lib/data";
+import { getRooms, getBookings, getBlockedDates, getSeasonalPrices } from "@/lib/data";
 import { isRoomAvailable } from "@/lib/booking/availability";
 import { calcTotal } from "@/lib/booking/pricing";
 
@@ -30,7 +30,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "check-out deve ser depois do check-in" }, { status: 400 });
   }
 
-  const [rooms, bookings, blocked] = await Promise.all([getRooms(), getBookings(), getBlockedDates()]);
+  const [rooms, bookings, blocked, seasonal] = await Promise.all([
+    getRooms(),
+    getBookings(),
+    getBlockedDates(),
+    getSeasonalPrices(),
+  ]);
   const room = rooms.find((r) => r.id === data.room_id);
   if (!room) return NextResponse.json({ error: "Quarto nao encontrado" }, { status: 404 });
 
@@ -45,7 +50,7 @@ export async function POST(req: Request) {
   });
   if (!ok) return NextResponse.json({ error: "Quarto indisponivel para estas datas" }, { status: 409 });
 
-  const { total } = calcTotal({ room, checkIn: data.check_in, checkOut: data.check_out });
+  const { total } = calcTotal({ room, checkIn: data.check_in, checkOut: data.check_out, seasonal });
 
   const booking = {
     id: crypto.randomUUID(),
