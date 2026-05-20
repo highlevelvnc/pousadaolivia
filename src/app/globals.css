@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --color-navy: #234B6B;
+  --color-laguna: #5E8FA8;
+  --color-sand: #E8DCCB;
+  --color-gold: #D7B25F;
+  --color-shell: #F8F6F1;
+  --color-graphite: #2E3740;
+}
+
+html, body { overflow-x: clip; }
+
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+body {
+  background: var(--color-shell);
+  color: var(--color-graphite);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+::selection { background: var(--color-gold); color: #0E1F2C; }
+
+/* Scroll reveal: visible-by-default + IO + fallback (ver CLAUDE.md). */
+[data-revealed="false"] {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+}
+[data-revealed="false"][data-reveal="left"]  { transform: translate3d(-40px, 0, 0); }
+[data-revealed="false"][data-reveal="right"] { transform: translate3d(40px, 0, 0); }
+[data-reveal] {
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-revealed="false"] { opacity: 1; transform: none; }
+  [data-reveal] { transition: none; }
+}
+
+/* Componentes utilitarios */
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-navy px-6 py-3 text-shell font-sans font-semibold tracking-wide transition-all duration-300 hover:bg-navy-600 active:scale-[0.98] shadow-coastal;
+}
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-navy/30 bg-white/70 backdrop-blur px-6 py-3 text-navy font-sans font-semibold tracking-wide transition-all duration-300 hover:bg-navy hover:text-shell;
+}
+.btn-gold {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gold px-6 py-3 text-graphite font-sans font-semibold tracking-wide transition-all duration-300 hover:bg-gold-dark hover:text-shell active:scale-[0.98] shadow-coastal;
+}
+.btn-ghost-light {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-3 text-white font-sans font-semibold tracking-wide backdrop-blur-md transition-all duration-300 hover:bg-white/25;
+}
+.input-field {
+  @apply w-full rounded-lg border border-sand bg-shell/80 px-4 py-3 text-graphite placeholder:text-graphite/50 outline-none transition-colors focus:border-laguna focus:bg-white focus:ring-2 focus:ring-laguna/30;
+}
+.label-eyebrow {
+  @apply text-label uppercase tracking-[0.18em] text-laguna-dark font-semibold;
+}
+.section-title {
+  @apply font-display text-display-md text-navy;
+}
+.card-coastal {
+  @apply rounded-2xl bg-white shadow-coastal border border-sand/60 overflow-hidden;
+}
+
+/* Decoracoes */
+.coastal-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-sand-dark, #CFBFA6), transparent);
+}
